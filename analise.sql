@@ -50,13 +50,20 @@ INSERT INTO fruit_inventory (fruit, quantity, supplier, arrival_date) VALUES
 -- VIZUALIZAR A TABELA TODA
 SELECT * FROM fruit_inventory;
 
--- CONTAGEM DE FRUTAS POR LINHA
+-- obs essa é a quantidade de frutas da coluna
 SELECT fruit, count(*) as quantity
 FROM fruit_inventory
 GROUP BY 1 -- ou fruit
 ;
 
--- SOMA DE QUANTIDADE DE FRUTAS NO GERAL
+-- VIZUALIZAR A QUANTIDADE DE FRUTAS EM CADA FAZENDA
+SELECT 
+	supplier AS fazendas, 
+	SUM(quantity) AS quantidade_de_frutas
+FROM fruit_inventory
+GROUP BY supplier
+;
+
 SELECT 
 	fruit, 
 	SUM(quantity) AS quantidade_total_frutas
@@ -64,7 +71,7 @@ FROM fruit_inventory
 GROUP BY fruit
 ;
 
--- VIZUALIZAR A QUANTIDADE DE FRUTAS POR MES
+
 SELECT 
 	fruit,
 	STRFTIME('%m', arrival_date) AS month, -- No POSTGRESQL/SQL SERVER = DATE_TRUNC() e no MYSQL = DATE_FORMAT()
@@ -75,7 +82,6 @@ GROUP BY
 	month, fruit
 ;
 
--- VIZUALIZAR A QUANTIDADE DE FRUTAS POR MES (ESPECIFICANDO A FRUTA)
 SELECT
     fruit,
     STRFTIME('%m', arrival_date) AS month,
@@ -87,4 +93,68 @@ WHERE
 GROUP BY 
     fruit,
     STRFTIME('%m', arrival_date)
+;
+
+SELECT
+	STRFTIME('%m', arrival_date) AS mes,
+	supplier,
+	AVG(quantity) AS media_quantidade_de_fruta
+FROM
+	fruit_inventory
+GROUP BY 
+	supplier, mes
+;
+
+-- subquer
+SELECT
+    MAX(media_quantidade_de_fruta) AS max
+FROM (
+	SELECT
+	STRFTIME('%m', arrival_date) AS mes,
+	supplier,
+	AVG(quantity) AS media_quantidade_de_fruta
+FROM
+	fruit_inventory
+GROUP BY 
+	supplier, mes
+) t;
+
+
+-- CTE (Common Table Expression) é uma tabela temporária nomeada, criada apenas para aquela query
+WITH CTE AS(
+	SELECT
+		STRFTIME('%m', arrival_date) AS mes,
+		supplier,
+		AVG(quantity) AS media_quantidade_de_fruta
+	FROM
+		fruit_inventory
+	GROUP BY 
+		supplier, mes
+)
+SELECT
+	MAX(media_quantidade_de_fruta) AS max
+FROM CTE
+;
+
+-- tabela temporária
+CREATE TEMP TABLE tabela_temp as
+	SELECT
+		STRFTIME('%m', arrival_date) AS mes,
+		supplier,
+		AVG(quantity) AS media_quantidade_de_fruta
+	FROM
+		fruit_inventory
+	GROUP BY 
+;		supplier, mes
+
+-- MAX		
+SELECT
+	MAX(media_quantidade_de_fruta) AS max
+FROM tabela_temp
+;
+
+-- MIN		
+SELECT
+	MIN(media_quantidade_de_fruta) AS min
+FROM tabela_temp
 ;
