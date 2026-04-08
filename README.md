@@ -1,4 +1,3 @@
-%md
 # Analise de Dados em SQL
 
 ### Pratica em analise de dados em sql baseada no livro "SQL FOR DATA ANALISYS"
