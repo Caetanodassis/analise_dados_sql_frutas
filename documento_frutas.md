@@ -48,7 +48,7 @@ GROUP BY 1 -- ou fruit
 
 ```
 
-### resultado:
+#### resultado:
 | fruit  | quantity |
 |--------|----------|
 | apple  | 8        |
@@ -140,3 +140,117 @@ GROUP BY
 | banana | 03    | 19                   |
 
 _OBS: Aqui foi ultilizado o WHERE, uma função que serve como condição, por exemplo nessa tabela so apareceu dados que é igual a "banana" na tabela 'fruit'_
+
+conseguimos ver a media da quantidade usando a função _AVG()_, mas vamos gerar um insght diferentes, qual sera a quantidade media por mes de cada fazenda?
+
+####código:
+```
+SELECT
+	STRFTIME('%m', arrival_date) AS mes,
+	supplier,
+	AVG(quantity) AS media_quantidade_de_fruta
+FROM
+	fruit_inventory
+GROUP BY 
+	supplier, mes
+;
+```
+####resultado:
+| mes | supplier | media_quantidade_de_fruta |
+|-----|----------|---------------------------|
+| 01  | Farm A   | 7.4                       |
+| 02  | Farm A   | 9.666666667               |
+| 03  | Farm A   | 9.666666667               |
+| 01  | Farm B   | 7.4                       |
+| 02  | Farm B   | 8                         |
+| 03  | Farm B   | 9.666666667               |
+| 01  | Farm C   | 7.5                       |
+| 02  | Farm C   | 7.5                       |
+| 03  | Farm C   | 11                        |
+
+Nesse codigo foi selecionado o mes, a fazenda e a media da quantidade, agora vamos imaginar que meu cliente quer saber o maior número (que seria o 11) como faria?
+
+há várias formas:
+
+####Subquery:
+```
+SELECT
+    MAX(media_quantidade_de_fruta) AS max
+FROM (
+	SELECT
+	STRFTIME('%m', arrival_date) AS mes,
+	supplier,
+	AVG(quantity) AS media_quantidade_de_fruta
+FROM
+	fruit_inventory
+GROUP BY 
+	supplier, mes
+) t;
+```
+####resultado:
+| max |
+|-----|
+| 11  |
+
+Aqui, há a query anterior está no FROM, ou seja, no código reescreveram a query que foi baseada, e deve ta se perguntando e esse 't'? é o nome da tabela, poderia ser qualquer nome, mas colocam t de table, so por costume 
+
+####CTE:
+```
+WITH CTE AS(
+	SELECT
+		STRFTIME('%m', arrival_date) AS mes,
+		supplier as x,
+		AVG(quantity) AS media_quantidade_de_fruta
+	FROM
+		fruit_inventory
+	GROUP BY 
+		supplier, mes
+)
+SELECT
+	MAX(media_quantidade_de_fruta) AS max
+FROM CTE
+;
+```
+####resultado:
+| max |
+|-----|
+| 11  |
+
+CTE (Common Table Expression) é uma tabela temporária nomeada, criada apenas para aquela query
+
+#### Tabela Temporaria:
+```
+CREATE TEMP TABLE tabela_temp as
+	SELECT
+		STRFTIME('%m', arrival_date) AS mes,
+		supplier,
+		AVG(quantity) AS media_quantidade_de_fruta
+	FROM
+		fruit_inventory
+	GROUP BY 
+		supplier, mes
+;
+		
+SELECT
+	MAX(media_quantidade_de_fruta) AS max
+FROM tabela_temp
+;
+```
+####resultado:
+| max |
+|-----|
+| 11  |
+ 
+ Aqui é interessante que pode ser usadas em outros código, se eu quiser ver o MIN por exemplo:
+
+####  min:
+ ```		
+SELECT
+	MIN(media_quantidade_de_fruta) AS min
+FROM tabela_temp
+;
+ ```
+####resultado:
+| min |
+|-----|
+| 7,4  |
